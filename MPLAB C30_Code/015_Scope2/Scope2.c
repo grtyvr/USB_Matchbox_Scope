@@ -19,6 +19,8 @@
 // 11 Aug 2013  Introduced split read mode for 400 Data FFT 1/2 
 //              Changed back rs232 to TX polled mode (Really not required)
 //				Added back all the answerbacks except "C" & "D"
+//
+// 20 Mar 2016 Cleaned up indenting for readability
 // ------------------------------------------------------------
 // Problems:
 // VB has errors when reading 400 data continuously
@@ -61,7 +63,7 @@ unsigned long sliding_delay_cycles, adc_index;
 
 
 #define busy   		LATEbits.LATE4 //  Busy
-#define hw_reset   LATEbits.LATE5 //  HW_Reset
+#define hw_reset	LATEbits.LATE5 //  HW_Reset
 
 
 //ISR for CMP3
@@ -125,107 +127,103 @@ void __attribute__((__interrupt__, __auto_psv__)) _CMP3Interrupt(void){
 //----------------------------------------------------------------------
 //Main Program	
 int main( ){
-		__delay32(3200);//initial delay 100uSec
-		initUart(); //Initialise the UART
-		__delay32(3200);//initial delay 100uSec
-	    
-		hw_reset=0;
-		TRISA=1; //PortA all inputs
-		TRISE=0; //PortE all outputs
-	    initialiseADC ();
-		initialiseComp();
-		setupOC1PWM();
-		setupOC2PWM();
-	
-		busy=1;
-		
-		
-		//AjScope
-		putHex(65);putHex(106);putHex(83);putHex(99);putHex(111);putHex(112);
-		putHex(101);	putHex(13);putHex(10);
-		
-		__delay32(3200000); //initial delay 1Sec
-		
-		busy=0;
-	    
+	__delay32(3200);//initial delay 100uSec
+	initUart(); //Initialise the UART
+	__delay32(3200);//initial delay 100uSec
+
+	hw_reset=0;
+	TRISA=1; //PortA all inputs
+	TRISE=0; //PortE all outputs
+	initialiseADC ();
+	initialiseComp();
+	setupOC1PWM();
+	setupOC2PWM();
+
+	busy=1;
+
+	//AjScope
+	putHex(65);putHex(106);putHex(83);putHex(99);putHex(111);putHex(112);
+	putHex(101);	putHex(13);putHex(10);
+
+	__delay32(3200000); //initial delay 1Sec
+
+	busy=0;
 	
  	while(1){	
-			input_string[0] =getHex();
-   
-					
+		input_string[0] =getHex();
+		
 		if ( error==0) { 
-
-            if (input_string[0]==73){ 		//"I" Identify
+			if (input_string[0]==73){ 		//"I" Identify
 				putHex(65);putHex(106);putHex(32);putHex(83);putHex(99);putHex(111);putHex(112);
 				putHex(101);putHex(32);
 				putHex(82);putHex(101);putHex(97);putHex(100);putHex(121);putHex(32);
 				putHex(13);putHex(10);
-            }
-            else if (input_string[0]==65){  		//"A" Abort
+            		}
+            		else if (input_string[0]==65){  	//"A" Abort
 				putHex(65);
 				goto restart;
-				}
+			}
 			else if (input_string[0]==66){  	//"B" Read Busy
 				putHex(66);
-				}
-            else if  (input_string[0]==82){     //"R" Read Vref
+			}
+        		else if  (input_string[0]==82){		//"R" Read Vref
 				putHex(82);
 				readVref();			
 			}
 			else if  (input_string[0]==68){  	//"D" Send Data
 				//------putHex(68);
 				input_string[1]=getHex();
-				if(input_string[1]==1){ //CH1 200
+				if(input_string[1]==1){ 	//CH1 200
 					for(adc_index=0;adc_index<400;adc_index++){ //CH1 Data
-					putHex(AN[adc_index]);//8 bit AN0 Value
-					adc_index++;
-					__delay32(3200); //100us delay
+						putHex(AN[adc_index]);	//8 bit AN0 Value
+						adc_index++;
+						__delay32(3200); 	//100us delay
 					}
 				}
-				else if (input_string[1]==2){//CH2 200
+				else if (input_string[1]==2){		//CH2 200
 					for(adc_index=0;adc_index<400;adc_index++){ //Ch2 Data
-					putHex(AN[adc_index+1]);//8 bit AN0 Value
-					adc_index++;
-					__delay32(3200); //100us delay
+						putHex(AN[adc_index+1]);//8 bit AN0 Value
+						adc_index++;
+						__delay32(3200); 	//100us delay
 					}
 				}
-				else if (input_string[1]==3){//First 200 of 400 samples CH1/CH2/FFT
+				else if (input_string[1]==3){		//First 200 of 400 samples CH1/CH2/FFT
 					for(adc_index=0;adc_index<200;adc_index++){ //All Data
-					putHex(AN[adc_index]);//8 bit AN0 Value
-					__delay32(3200); //100us delay
+						putHex(AN[adc_index]);	//8 bit AN0 Value
+						__delay32(3200); 	//100us delay
 					}	
 				}
 				else if (input_string[1]==4){//Second 200 of 400 samples CH1/CH2/FFT
 					for(adc_index=200;adc_index<400;adc_index++){ //All Data
-					putHex(AN[adc_index]);//8 bit AN0 Value
-					__delay32(3200); //100us delay
+						putHex(AN[adc_index]);//8 bit AN0 Value
+						__delay32(3200); //100us delay
 					}	
 				}
-			}		
+			}
 			else if (input_string[0]==83){  	//"S" Sample Rate
 				putHex(83);
 				input_string[1]=getHex();
 				sampling_rate=input_string[1];
 				set_sampling(sampling_rate);
-				
-				}
-            else if  (input_string[0]==78)  	//"N" Noise Filter
+			}
+        		else if  (input_string[0]==78){  	//"N" Noise Filter
 				putHex(78);
+			}
 			else if  (input_string[0]==67){  	//"C" Capture Data
 				//----------putHex(67);
 				capture_data();
-			}	
+			}
 			else if (input_string[0]==76){  	//"L" Trig Level
 				putHex(76);
 				input_string[1]=getHex();
 				input_string[2]=getHex();
 				CMPDAC3bits.CMREF=input_string[1]*256 + input_string[2];//Comp3ref
 			}
-            else if  (input_string[0]==84){  	//"T" Trig Source
+        		else if  (input_string[0]==84){  	//"T" Trig Source
 				putHex(84);
 				input_string[1]=getHex();
 				capture_mode=input_string[1]; // 0/1/2 auto/Ch1/Ch2
-				}
+			}
 			else if  (input_string[0]==80){  	//"P" Trig Polarity
 				putHex(80);
 				input_string[1]=getHex();
@@ -239,60 +237,56 @@ int main( ){
 				//Pga 1/2 Setting 1/2
 				setpga(input_string[1], 1); //gain, pga= 1 
 				setpga(input_string[2], 2); //gain, pga= 2 				
-				}
+			}
 			else if (input_string[0]==79){   	//"O" Offset Ch1
 				putHex(79);
 				input_string[1]=getHex();
 				input_string[2]=getHex();
 				OC1RS=input_string[1]*256 + input_string[2];//Set PWM1
    			}         
-            else if  (input_string[0]==111){  	//"o" Offset Ch2
+        		else if  (input_string[0]==111){  	//"o" Offset Ch2
 				putHex(111);
 				input_string[1]=getHex();
 				input_string[2]=getHex();
 				OC2RS=input_string[1]*256 + input_string[2];//Set PWM2
-				
-            }
+        		}
 			else if  (input_string[0]==70){  	//"F" FFT mode
 				putHex(70);
 				input_string[1]=getHex();
-				fft=input_string[1]; 			// 0/1/2  AN0&1/AN0/AN1
-				}
-			else if  (input_string[0]==100)  	//"d" Delay Post Trigger
+				fft=input_string[1]; 		// 0/1/2  AN0&1/AN0/AN1
+			}
+			else if  (input_string[0]==100){  	//"d" Delay Post Trigger
 				putHex(100);
+			}
 			else if  (input_string[0]==116){  	//"t" Test LED
 				putHex(116);
 				busy = ~ busy;
-				}
-			else { 								//"E" Error
+			}
+			else { 					//"E" Error
 				putHex(69);
 				goto restart; 
-   				}    		
+   			}
 		}
-		
-		
 		//loop
 	}
-			
-	
-restart:
-return(0);	
+	restart:
+	return(0);	
 }
 //Read Voltage Reference 10Bit
 void readVref(void){
 	//Reads the value of AN2 and AN3 and returns the 10bit Value
 	// AN2msb);putHex(AN2lsb);putHex(AN3msb);putHex(AN3lsb);
 	unsigned char AN2msb,AN2lsb,AN3msb,AN3lsb; 
-	
-    ADCPC0bits.SWTRG1 = 1; //start conversion of AN3 and AN2
+	ADCPC0bits.SWTRG1 = 1;			//start conversion of AN3 and AN2
 	Nop();Nop();Nop();
-    while(ADCPC0bits.PEND1){} //conv pending becomes 0 when conv complete
-       	AN2lsb = ADCBUF2 &0x00ff;       // lsb of the ADC result
-        AN2msb=(ADCBUF2 &0xff00)>>8;  // msb of the ADC result
-		AN3lsb = ADCBUF3 &0x00ff;       // lsb of the ADC result
-        AN3msb=(ADCBUF3 &0xff00)>>8;  // msb of the ADC result
-		putHex(AN2msb);putHex(AN2lsb);putHex(AN3msb);putHex(AN3lsb);
+	while(ADCPC0bits.PEND1){} 		//conv pending becomes 0 when conv complete
+       	AN2lsb = ADCBUF2 &0x00ff;       	// lsb of the ADC result
+        AN2msb=(ADCBUF2 &0xff00)>>8;		// msb of the ADC result
+	AN3lsb = ADCBUF3 &0x00ff;		// lsb of the ADC result
+        AN3msb=(ADCBUF3 &0xff00)>>8;  		// msb of the ADC result
+	putHex(AN2msb);putHex(AN2lsb);putHex(AN3msb);putHex(AN3lsb);
 }
+
 //Capture data
 void capture_data(void){
 	busy=1;//---------putHex(66);
@@ -313,80 +307,76 @@ void capture_data(void){
 			busy=0;
 			putHex(68);putHex(111);putHex(110);putHex(101);
 		}
- 	}       
-	//CH1 Triggered Normal Non-Sliding Mode 
+ 	}
+	//CH1 Triggered 
 	else if (capture_mode==1){ // Trigger by Channel 1  Comp3A
-			// Trig Polarity set by "P"	
-			// Trig Level set by "L"
-			CMPCON3bits.INSEL=0; // 3A selected
-			CMPCON3bits.CMPON=1; //Comparator ON 
-			
-			if (sampling_mode==0){ //Normal Non-Sliding Mode
+		// Trig Polarity set by "P"	
+		// Trig Level set by "L"
+		CMPCON3bits.INSEL=0; // 3A selected
+		CMPCON3bits.CMPON=1; //Comparator ON 
+		if (sampling_mode==0){ //Normal Non-Sliding Mode
 			//ISR Collects the Data based on fft=0/1/2 modes
 			IFS1bits.AC3IF =0; //clear interrupt flag=0
 			IEC1bits.AC3IE =1; //Enable CMP3 interrupt
-			}
-	//CH1 Triggered Sliding Mode		
-			else if (sampling_mode==1){ //Sliding Mode
-			    
-				adc_index=0;
-				while (adc_index <400){
-					if(fft==0)
+		}
+		//CH1 Triggered Sliding Mode		
+		else if (sampling_mode==1){ //Sliding Mode
+			adc_index=0;
+			while (adc_index <400){
+				if(fft==0){
 					sliding_delay_cycles =(sliding_delay * (adc_index >>1)/10 ); 
-					else
+				}
+				else {
 					sliding_delay_cycles =(sliding_delay * (adc_index )/10 );
-				
+				}
 				IFS1bits.AC3IF =0; //clear interrupt flag=0
 				//ISR Collects the Data based on fft=0/1/2 modes
 				IEC1bits.AC3IE =1; //Enable CMP3A interrupt
-				}
+			}
 			busy=0;
 			putHex(68);putHex(111);putHex(110);putHex(101);
-			}
-	}
-	//CH2 Normal Mode
-	else if (capture_mode==2){ // Trigger by Channel 2  Comp3B
-			// Trig Polarity set by "P"		
-			// Trig Level set by "L"
-			CMPCON3bits.INSEL=1; // 3B selected
-			CMPCON3bits.CMPON=1; //Comparator ON 
 			
-			if (sampling_mode==0){ //Normal Mode
+		}
+
+	}	
+	//CH2 Triggered
+	else if (capture_mode==2){ // Trigger by Channel 2  Comp3B
+		// Trig Polarity set by "P"		
+		// Trig Level set by "L"
+		CMPCON3bits.INSEL=1; // 3B selected
+		CMPCON3bits.CMPON=1; //Comparator ON 
+		if (sampling_mode==0){ //Normal Mode
 			//ISR Collects the Data based on fft=0/1/2 modes
 			IFS1bits.AC3IF =0; //clear interrupt flag=0
 			IEC1bits.AC3IE =1; //Enable CMP3 interrupt
-			}
-	//CH2 Triggered Sliding Mode		
-			else if (sampling_mode==1){ //Sliding Mode
-			    
-				adc_index=0;
-				while (adc_index <400){
-					if(fft==0)
+		}
+		else if (sampling_mode==1){ //Sliding Mode
+			adc_index=0;
+			while (adc_index <400){
+				if(fft==0){
 					sliding_delay_cycles =(sliding_delay * (adc_index >>1)/10 ); 
-					else
+				}
+				else {
 					sliding_delay_cycles =(sliding_delay * (adc_index )/10 ) ;
-				
+				}
 				IFS1bits.AC3IF =0; //clear interrupt flag=0
 				//ISR Collects the Data based on fft=0/1/2 modes
 				IEC1bits.AC3IE =1; //Enable CMP3A interrupt
-				}
+			}
 			busy=0;
 			putHex(68);putHex(111);putHex(110);putHex(101);
-			}
+		}
 	}
-	
-
-	//busy=0;
 }
 void set_sampling(unsigned char rate){
 //	11 for rounding off to 2usec +64*N  for additional 2*N usec
-	if(rate == 1){		// 2 us/sample 			500kbps 	20us/div
+	if(rate == 1){		// 2 us/sample		500kbps 	20us/div
 		delay_cycles=11;sampling_mode=0;}
-	else if(rate == 2){  // 5 us/sample 		200kbps 	50us/div
+	else if(rate == 2){	// 5 us/sample		200kbps 	50us/div
 		delay_cycles=11+96;sampling_mode=0;} 
-	else if(rate == 3){  // 10 us/sample 		100kbps  	0.1ms/div
+	else if(rate == 3){	// 10 us/sample 	100kbps  	0.1ms/div
 		delay_cycles=11+256;sampling_mode=0; }
-	else if(rate == 4){  // 20 us/sample 		50kbps  	0.2ms/div
+	else if(rate == 4){	// 20 us/sample 	50kbps  	0.2ms/div
 		delay_cycles=11+576;sampling_mode=0;} 
 	else if(rate == 5){  // 50 us/sample 		20kbps  	0.5ms/div
 		delay_cycles=11+1536;sampling_mode=0;} 
@@ -433,45 +423,36 @@ void get_normal_data(void){
 	int temp=0;	
 	ADCPC0bits.SWTRG0 = 1; //start conversion of AN0 and AN1 store 200 samples each
 	while(temp<400){    
-        
 		while(ADCPC0bits.PEND0){} //conv pending becomes 0 when conv complete
-			AN[temp]=ADCBUF0>>2;
-			temp++;
-			AN[temp]=ADCBUF1>>2;
-			temp++;
-			__delay32(delay_cycles);
-			
-			ADCPC0bits.SWTRG0 = 1; //start conversion of AN3 and AN2
-		
-		}
-
-
+		AN[temp]=ADCBUF0>>2;
+		temp++;
+		AN[temp]=ADCBUF1>>2;
+		temp++;
+		__delay32(delay_cycles);
+		ADCPC0bits.SWTRG0 = 1; //start conversion of AN3 and AN2
+	}
 }
 void get_fft1_data(void){
 	int temp=0;	
 	ADCPC0bits.SWTRG0 = 1; //start conversion of AN0 and store 400 samples 
 	while(temp<400){    
-        
 		while(ADCPC0bits.PEND0){} //conv pending becomes 0 when conv complete
 		AN[temp]=ADCBUF0>>2;
 		temp++;
 		__delay32(delay_cycles+6);
-			
 		ADCPC0bits.SWTRG0 = 1; //start conversion of AN0 and AN1
-								// sets PEND0 to 1
-		}
+							// sets PEND0 to 1
+	}
 }
 void get_fft2_data(void){
 	int temp=0;	
 	ADCPC0bits.SWTRG0 = 1; //start conversion of AN1 store 400 samples 
 	while(temp<400){    
-        
 		while(ADCPC0bits.PEND0){} //conv pending becomes 0 when conv complete
 		AN[temp]=ADCBUF1>>2;
 		temp++;
 		__delay32(delay_cycles+6);
-			
 		ADCPC0bits.SWTRG0 = 1; //start conversion of AN0 and AN1
 								// sets PEND0 to 1
-		}
+	}
 }
